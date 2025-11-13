@@ -95,7 +95,9 @@ class Sam(nn.Module):
                 to subsequent iterations of prediction.
         """
         input_images = torch.stack([self.preprocess(x["image"]) for x in batched_input], dim=0)
-        image_embeddings = self.image_encoder(input_images)
+        image_embeddings = self.image_encoder(input_images) # B x H x W x C
+        # @Eason print size
+        # print(f"image embedding size is {image_embeddings.shape}")
 
         outputs = []
         for image_record, curr_embedding in zip(batched_input, image_embeddings):
@@ -109,8 +111,8 @@ class Sam(nn.Module):
                 masks=image_record.get("mask_inputs", None),
             )
             low_res_masks, iou_predictions = self.mask_decoder(
-                image_embeddings=curr_embedding.unsqueeze(0),
-                image_pe=self.prompt_encoder.get_dense_pe(),
+                image_embeddings=curr_embedding.unsqueeze(0), # None x C x H x W
+                image_pe=self.prompt_encoder.get_dense_pe(), # None x C x H x W
                 sparse_prompt_embeddings=sparse_embeddings,
                 dense_prompt_embeddings=dense_embeddings,
                 multimask_output=multimask_output,

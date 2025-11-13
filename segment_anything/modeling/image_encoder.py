@@ -110,6 +110,9 @@ class ImageEncoderViT(nn.Module):
 
         for blk in self.blocks:
             x = blk(x)
+        
+        # @Eason feature size after attention
+        print(f"after attention feature size is {x.shape}")
 
         x = self.neck(x.permute(0, 3, 1, 2))
 

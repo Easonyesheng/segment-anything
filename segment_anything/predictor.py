@@ -7,7 +7,7 @@
 import numpy as np
 import torch
 
-from segment_anything.modeling import Sam
+from ..segment_anything.modeling import Sam
 
 from typing import Optional, Tuple
 
@@ -57,7 +57,11 @@ class SamPredictor:
         input_image_torch = torch.as_tensor(input_image, device=self.device)
         input_image_torch = input_image_torch.permute(2, 0, 1).contiguous()[None, :, :, :]
 
+        print(f"input image size is {input_image.shape} with type is {input_image.dtype}")
+
         self.set_torch_image(input_image_torch, image.shape[:2])
+        # Eason modify
+        return self.features
 
     @torch.no_grad()
     def set_torch_image(
@@ -86,7 +90,17 @@ class SamPredictor:
         self.original_size = original_image_size
         self.input_size = tuple(transformed_image.shape[-2:])
         input_image = self.model.preprocess(transformed_image)
+
+        # @Eason save image to show
+        # import torchvision
+        # padded_img_save = input_image.clone().detach().to(torch.device('cpu'))
+        # torchvision.utils.save_image(padded_img_save, "/data0/zys/segment-anything/test/res/padded_img.jpg")
+
+        # @Eason Get imbedding
         self.features = self.model.image_encoder(input_image)
+        print(f"transformed input image size is {input_image.shape} with type is {input_image.type}")
+        print(f"image embedding size is {self.features.shape}")
+
         self.is_image_set = True
 
     def predict(
